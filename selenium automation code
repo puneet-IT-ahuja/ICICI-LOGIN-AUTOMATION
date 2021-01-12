@@ -1,44 +1,69 @@
 
 from selenium import webdriver
 import unittest
-import time
 import openpyxl
-
+import time
 from selenium.webdriver.chrome.options import Options
 chromeoptions = Options()
 chromeoptions.add_experimental_option("prefs",{"profile.default_content_setting_values.notifications": 2})
 driver = webdriver.Chrome(executable_path="E:\my testing\webdrivers\chromedriver_win32\chromedriver", options=chromeoptions)
 
-path = r"E:\my testing\data drivern files\usernameandpasswords.xlsx"
-workbook = openpyxl.load_workbook(path)
-sheet = workbook.active
-row = sheet.max_row
-column = sheet.max_column
-print ("number of usernames and passwords to test" + str(row) )
 class testhomepage(unittest.TestCase):
+    def test_home(self): # Test home page title
 
-    def test_checkauth(self):
+        driver.get("https://www.icicibank.com/")
+        driver.maximize_window()
 
-        driver.get("https://infinity.icicibank.com/corp/AuthenticationController?FORMSGROUP_ID__=AuthenticationFG&__START_TRAN_FLAG__=Y&FG_BUTTONS__=LOAD&ACTION.LOAD=Y&AuthenticationFG.LOGIN_FLAG=1&BANK_ID=ICI&ITM=nli_personalb_personal_login_btn&_gl=1*jew37v*_ga*MTU4NDI1Njg1MC4xNjEwMzU4MjUz*_ga_SKB78GHTFV*MTYxMDM1ODI1Mi4xLjAuMTYxMDM1ODI3NS4zNw..&_ga=2.261916429.1268242575.1610358255-1584256850.1610358253")
-        username =driver.find_element_by_xpath("//*[@id='DUMMY1']")
+        title = (driver.title)
+        print(title)
+        self.assertEqual(title, "Personal Banking & Netbanking Services Online - ICICI Bank")
 
+    def test_login(self):   # Test login page title
+        login = driver.find_element_by_id("login-btn")
+        login.click()
+        login_title = driver.title
+        print (login_title )
+        self.assertEqual(login_title, "Log in to Internet Banking")
+    def test_manualauth(self):   # Test login auth using static data
+        username =driver.find_element_by_name("DUMMY1")
         username.click()
+        driver.find_element_by_xpath("//*[@id='AuthenticationFG.USER_PRINCIPAL']").send_keys('dddsf')
+        passsword = driver.find_element_by_xpath("//*[@id='AuthenticationFG.ACCESS_CODE']").send_keys('uddbidshb')
+        loginbutton = driver.find_element_by_xpath("//*[@id='VALIDATE_CREDENTIALS1']").click()
+        error = driver.find_element_by_id("errorlink1").is_displayed()
+        print (error)
+        time.sleep(10)
+        if (error == False):
+            print ("login succesful")
+        else:
+            print("login unsuccsesful -- wrong credentials")
+
+    def test_zzzheckauth(self):   # DATA DRIVEN TEST USING EXCEL 
+        path = r"E:\my testing\data drivern files\usernameandpasswords.xlsx"
+        workbook = openpyxl.load_workbook(path)
+        sheet = workbook.active
+        row = sheet.max_row
+        column = sheet.max_column
+        print("number of usernames and passwords to test" + str(row))
+        time.sleep(5)
+
 
         for r in range(2, row + 1):
             username2 = driver.find_element_by_id("AuthenticationFG.USER_PRINCIPAL")
             loginbutton = driver.find_element_by_id("VALIDATE_CREDENTIALS1")
             passsword = driver.find_element_by_class_name("login-input-password")
-            username2.send_keys(sheet.cell(row=r,column=2).value)
-            passsword.send_keys(sheet.cell(row=r,column=3.).value)
+            username2.send_keys(sheet.cell(row=r, column=2).value)
+            passsword.send_keys(sheet.cell(row=r, column=3.).value)
             loginbutton.click()
             time.sleep(10)
 
             error = driver.find_element_by_id("errorlink1").is_displayed()
             if (error == False):
-                sheet.cell (row=r,column=4).value="login succesful"
+                sheet.cell(row=r, column=4).value = "login succesful"
             else:
-                sheet.cell (row=r,column=4).value = "login unsuccsesful -- wrong credentials"
+                sheet.cell(row=r, column=4).value = "login unsuccsesful -- wrong credentials"
             workbook.save(path)
+
 
 if __name__ == '__main__':
     unittest.main()
