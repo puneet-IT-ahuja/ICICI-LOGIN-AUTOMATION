@@ -10,6 +10,8 @@ driver = webdriver.Chrome(executable_path="E:\my testing\webdrivers\chromedriver
 
 class testhomepage(unittest.TestCase):
     def test_home(self): # Test home page title
+        print("do something")
+        print("in branch")
         print("new git")
         driver.get("https://www.icicibank.com/")
         driver.maximize_window()
